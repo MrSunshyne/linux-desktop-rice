@@ -1,16 +1,16 @@
 pragma Singleton
 // Colours, sizes, fonts and timings shared by every component.
-// Driven by Settings.qml (Control Center → Settings); palette data in palettes.js.
+// Driven by Settings.qml (Control Center → Settings); theme data in themes.js.
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "palettes.js" as Palettes
+import "themes.js" as Themes
 
 Singleton {
     id: theme
 
-    // ---- Palette (Catppuccin flavour + accent) ------------------------------
-    readonly property var flavour: Palettes.flavours[Settings.flavour] ?? Palettes.flavours.mocha
+    // ---- Palette (theme from themes.js + accent) ---------------------------
+    readonly property var flavour: Themes.get(Settings.flavour)
     readonly property var c: flavour.colors
     readonly property bool dark: flavour.dark
 
@@ -53,9 +53,11 @@ Singleton {
     readonly property color backdrop: glass ? "transparent" : Qt.alpha(crust, dark ? 0.35 : 0.2)   // behind open panels
 
     readonly property color fg: text
-    readonly property color muted: dark ? subtext : c.subtext1   // secondary text; darker on Latte
+    readonly property color muted: dark ? subtext : c.subtext1   // secondary text; darker on light themes
     readonly property color dim: dark ? overlay0 : c.overlay2    // hints, disabled
-    readonly property color accent: c[Settings.accent] ?? c.sapphire
+    // From `flavour` in one binding, so name and colour table never come from different themes.
+    readonly property string accentName: Themes.accentOf(flavour, Settings.accent)
+    readonly property color accent: flavour.colors[Themes.accentOf(flavour, Settings.accent)]
     readonly property color accentInk: dark ? crust : base        // text/icons on accent fills
     readonly property color accentSoft: Qt.alpha(accent, 0.16)
     readonly property color urgent: red

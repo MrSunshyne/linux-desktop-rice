@@ -8,7 +8,8 @@ wrong the first time so you don't repeat it.
 
 A Hyprland session next to the distro's existing desktop (GNOME here), shell drawn entirely by
 Quickshell: floating bar, Control Center with tabs, Wi-Fi/Bluetooth pickers, launcher, macOS-style
-dock, notifications, volume pop-up, lock screen and idle. Catppuccin palettes. Optional liquid glass
+dock, notifications, volume pop-up, lock screen and idle. 12 colour themes (Catppuccin, Tokyo Night,
+Nord, Gruvbox, Rosé Pine, Dracula, Everforest, Kanagawa). Optional liquid glass
 via the hyprglass Hyprland plugin. Screenshots: `docs/screenshots/`.
 
 Built on (versions matter, see Gotchas):
@@ -55,6 +56,11 @@ settings.json ──> Settings.qml ──> Theme.qml ──> every QML component
                              (accent borders, glass on/off + strength, bar radius, animations)
                              written only when its text changes, then `hyprctl reload`
 ```
+
+Themes live in `quickshell/themes.js`: each has the role colours Theme.qml reads (`crust` bar,
+`mantle` panels, `base` cards, `surface0/1`, `overlay0/2`, `subtext0/1`, `text`, `red/green/yellow`)
+plus its own accent list and default accent. Catppuccin's four come from the generated
+`palettes.js`. To add a theme, add one `add(id, {...})` block; nothing else needs to change.
 
 - **`hyprland.lua`**: monitor; `hl.on("hyprland.start")` starts the session target, Quickshell
   (`qs`), the polkit agent, hypridle and Flameshot; `hl.on("hyprland.shutdown")` stops the session

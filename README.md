@@ -44,9 +44,10 @@ Settings tab:
   menu, auto-hide; bottom, left or right.
 - **Notification** pop-ups, a **volume pop-up**, **lock screen** (hyprlock) and **idle** handling
   (hypridle).
-- **Settings tab**: Catppuccin flavour (Latte, Frappé, Macchiato, Mocha) and accent, liquid glass or
-  solid, glass frost/refraction/tint, bar style/height/roundness, animation speed, dock options,
-  wallpaper. Saved to `~/.config/quickshell/settings.json`; applies live.
+- **Settings tab**: 12 themes (Catppuccin Latte/Frappé/Macchiato/Mocha, Tokyo Night, Nord, Gruvbox,
+  Rosé Pine, Rosé Pine Dawn, Dracula, Everforest, Kanagawa), each with its own accents; liquid glass
+  or solid, glass frost/refraction/tint, bar style/height/roundness, animation speed, dock options,
+  wallpaper. Saved to `~/.config/quickshell/settings.json`; applies live, window borders included.
 
 ## Requirements
 
@@ -80,8 +81,8 @@ cd linux-desktop-rice
 2. Log out and choose **Hyprland** on the login screen.
 3. Open the Control Center (⏻ in the bar) → Settings to pick the wallpaper and style.
 
-`config/quickshell/settings.json` holds my current choices (solid, square, dock on the left). Delete
-it before installing to start from the defaults instead (liquid glass, rounded, dock at the bottom).
+`config/quickshell/settings.json` holds my current choices. Delete it before installing to start
+from the defaults instead (Catppuccin Mocha, liquid glass, rounded, dock at the bottom).
 
 To save changes you make on your machine back into the repo, run `./sync.sh`, review `git diff`,
 then commit.
@@ -138,6 +139,7 @@ config/
     Bar, Dock, ControlCenter, Launcher, BarPicker, NotificationPopups, VolumeOsd, Wallpaper
     cc/                      Control Center tabs
     ui/                      reusable widgets
+    themes.js                all themes: role colours + accent lists (adds to palettes.js)
     palettes.js              Catppuccin palettes (generated from catppuccin/palette)
 wallpapers/                  the wallpaper in the screenshots
 docs/screenshots/            README images (private text blurred)

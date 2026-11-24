@@ -5,7 +5,7 @@ import Quickshell
 import Quickshell.Io
 import qs
 import qs.ui
-import "../palettes.js" as Palettes
+import "../themes.js" as Themes
 
 Flickable {
     id: root
@@ -48,19 +48,20 @@ Flickable {
             Layout.fillWidth: true
             spacing: 12
 
-            Label { text: "Flavour" }
+            Label { text: "Theme" }
             GridLayout {
                 Layout.fillWidth: true
                 columns: 4
                 columnSpacing: 8
+                rowSpacing: 8
                 Repeater {
-                    model: Palettes.order
+                    model: Themes.order
                     delegate: Rectangle {
                         required property string modelData
-                        readonly property var f: Palettes.flavours[modelData]
+                        readonly property var f: Themes.themes[modelData]
                         readonly property bool selected: Settings.flavour === modelData
                         Layout.fillWidth: true
-                        implicitHeight: 64
+                        implicitHeight: 72
                         radius: Theme.radiusSmall
                         color: f.colors.base
                         border.width: selected ? 2 : 1
@@ -73,7 +74,7 @@ Flickable {
                                 Layout.alignment: Qt.AlignHCenter
                                 spacing: 4
                                 Repeater {
-                                    model: ["text", Settings.accent, "surface1", "crust"]
+                                    model: ["text", Themes.accentOf(f, Settings.accent), "surface1", "crust"]
                                     delegate: Rectangle {
                                         required property string modelData
                                         width: 12; height: 12; radius: 6
@@ -89,26 +90,38 @@ Flickable {
                                 font.pixelSize: Theme.fontSize - 1
                                 font.weight: selected ? Font.DemiBold : Font.Normal
                             }
+                            Text {
+                                Layout.alignment: Qt.AlignHCenter
+                                visible: f.family === "Catppuccin"
+                                text: "Catppuccin"
+                                color: f.colors.subtext0
+                                font.family: Theme.font
+                                font.pixelSize: Theme.fontSize - 3
+                            }
                         }
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: Settings.flavour = modelData
+                            // Keep the accent if the new theme has it, else use the theme's own default.
+                            onClicked: {
+                                Settings.flavour = modelData;
+                                Settings.accent = Themes.accentOf(f, Settings.accent);
+                            }
                         }
                     }
                 }
             }
-            Hint { text: "Latte is light. Only the shell and window borders change; apps keep following GNOME's dark/light setting." }
+            Hint { text: "Latte and Rosé Pine Dawn are light. Only the shell and window borders change; apps keep following GNOME's dark/light setting." }
 
             Label { text: "Accent"; Layout.topMargin: 4 }
             Flow {
                 Layout.fillWidth: true
                 spacing: 8
                 Repeater {
-                    model: Palettes.accents
+                    model: Theme.flavour.accents
                     delegate: Rectangle {
                         required property string modelData
-                        readonly property bool selected: Settings.accent === modelData
+                        readonly property bool selected: Theme.accentName === modelData
                         width: 30; height: 30; radius: 15
                         color: "transparent"
                         border.width: 2
@@ -116,7 +129,7 @@ Flickable {
                         Rectangle {
                             anchors.centerIn: parent
                             width: 22; height: 22; radius: 11
-                            color: Theme.c[modelData]
+                            color: Theme.flavour.colors[modelData] ?? "transparent"   // briefly unset while switching themes
                         }
                         MouseArea {
                             anchors.fill: parent

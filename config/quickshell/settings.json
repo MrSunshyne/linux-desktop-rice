@@ -1,5 +1,5 @@
 {
-    "accent": "sapphire",
+    "accent": "iris",
     "barFloating": true,
     "barHeight": 36,
     "dockAutohide": false,
@@ -14,7 +14,7 @@
         "net.thunderbird.Thunderbird"
     ],
     "dockPosition": "left",
-    "flavour": "mocha",
+    "flavour": "rosepinedawn",
     "frost": 1.4,
     "material": "solid",
     "motion": "fast",
