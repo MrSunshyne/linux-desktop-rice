@@ -1,0 +1,488 @@
+-- This is an example Hyprland Lua config file.
+-- Refer to the wiki for more information.
+-- https://wiki.hypr.land/configuring/
+
+-- Please note not all available settings / options are set here.
+-- For a full list, see the wiki
+
+-- You can (and should!!) split this configuration into multiple files
+-- Create your files separately and then require them like this:
+-- require("myColors")
+
+
+------------------
+---- MONITORS ----
+------------------
+
+-- See https://wiki.hypr.land/configuring/core/monitors/
+hl.monitor({
+    output   = "",
+    mode     = "preferred",
+    position = "auto",
+    scale    = "auto",
+})
+
+-- AOC U32G4 on the GTX 1660 SUPER: same mode and scale as GNOME uses.
+hl.monitor({
+    output   = "DP-4",
+    mode     = "3840x2160@160",
+    position = "0x0",
+    scale    = 1.25,
+})
+
+
+---------------------
+---- MY PROGRAMS ----
+---------------------
+
+-- Set programs that you use
+local terminal    = "kitty"
+local fileManager = "nautilus"
+local menu        = "hyprlauncher"
+
+
+-------------------
+---- AUTOSTART ----
+-------------------
+
+-- See https://wiki.hypr.land/configuring/core/autostart/
+
+-- Autostart necessary processes (like notifications daemons, status bars, etc.)
+-- Or execute your favorite apps at launch like this:
+--
+hl.on("hyprland.start", function ()
+  -- Activate graphical-session.target so xdg-desktop-portal (file pickers,
+  -- screen sharing) can start. ~/.config/systemd/user/hyprland-session.target
+  hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE && systemctl --user start hyprland-session.target")
+  -- Bar, notifications, tray: ~/.config/quickshell/shell.qml
+  hl.exec_cmd("qs")
+  -- Password prompts for admin actions. Started here, NOT via the systemd
+  -- user unit, so it never runs inside GNOME (GNOME Shell has its own agent).
+  hl.exec_cmd("/usr/libexec/hyprpolkitagent")
+  -- Idle: lock at 15 min, screen off, suspend at 100 min (hypridle.conf)
+  hl.exec_cmd("hypridle")
+  -- Apps. GNOME's ~/.config/autostart is NOT read here; list them explicitly.
+  -- qz-tray, Mailspring, Dropbox and portless are deliberately left out.
+  hl.exec_cmd("flameshot")
+end)
+
+-- Stop the session target on exit so it doesn't linger into a GNOME login
+-- (user services keep running after logout on this machine).
+hl.on("hyprland.shutdown", function ()
+  hl.exec_cmd("systemctl --user stop hyprland-session.target")
+end)
+
+
+-------------------------------
+---- ENVIRONMENT VARIABLES ----
+-------------------------------
+
+-- See https://wiki.hypr.land/configuring/core/environment-variables/
+
+hl.env("XCURSOR_SIZE", "24")
+hl.env("HYPRCURSOR_SIZE", "24")
+
+-- NVIDIA (wiki.hypr.land/Nvidia). Set here only, so GNOME is unaffected.
+hl.env("LIBVA_DRIVER_NAME", "nvidia")
+hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+hl.env("NVD_BACKEND", "direct")
+hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")
+
+-- Quickshell has no desktop to inherit an icon theme from; use GNOME's.
+hl.env("QS_ICON_THEME", "Adwaita")
+
+
+-------------------------------------
+---- LOOK (from Quickshell Settings) --
+-------------------------------------
+
+-- ~/.config/hypr/look.lua is written by the Settings tab in the Quickshell
+-- Control Center: accent colours, glass, bar shape, animations. Read with
+-- dofile so every reload sees the latest file; defaults if it's missing.
+local ok, look = pcall(dofile, os.getenv("HOME") .. "/.config/hypr/look.lua")
+if not ok or type(look) ~= "table" then
+    look = {
+        dark = true, accent = "74c7ec", accent2 = "89b4fa", inactive = "45475a",
+        tint = "11111b54", glass = true, frost = 1.4, refraction = 1.6,
+        bar_floating = true, bar_radius = 16, animations = true,
+    }
+end
+
+
+------------------------
+---- LIQUID GLASS  -----
+------------------------
+
+-- hyprglass plugin (https://github.com/hyprnux/hyprglass), v1.2.0 prebuilt for
+-- Hyprland 0.57.2. After a Hyprland update, download the matching release (or
+-- build it) and change the path; on a version mismatch it pauses itself.
+-- `hyprctl hyprglass status` shows whether it is drawing.
+-- Quickshell switches to translucent surfaces when this is loaded (Theme.qml).
+hl.plugin.load(os.getenv("HOME") .. "/.local/share/hyprland/plugins/hyprglass-1.2.0.so")
+
+if hl.plugin.hyprglass then
+    local hg = hl.plugin.hyprglass
+
+    hg.config({
+        default_theme = look.dark and "dark" or "light",
+        default_preset = "shell",
+        layers = { enabled = look.glass, mask_threshold = 0.08, mask_feather = 0.12 },
+    })
+
+    -- Built on the Apple look-alike preset: softer blur, crisper lit bevel,
+    -- a little dispersion at the edge, Catppuccin-dark tint.
+    hg.preset("shell", {
+        inherits = "pomme",
+        blur_strength = look.frost,
+        blur_iterations = 3,
+        refraction_strength = look.refraction,
+        chromatic_aberration = 0.12,
+        edge_thickness_px = 18,
+        specular_strength = 0.55,
+        bevel_strength = 0.65,
+        bevel_size = 1.5,
+        noise_strength = 0.03,
+        dark = { tint_color = tonumber(look.tint, 16), brightness = 0.95, vibrancy = 0.2 },
+        light = { tint_color = tonumber(look.tint, 16) },
+    })
+    hg.preset("bar", { inherits = "shell", edge_thickness_px = 10, refraction_strength = 1.2 })
+
+    -- Only these Quickshell layers get glass (wallpaper and others are left out).
+    hg.layer("quickshell-bar", { preset = "bar", shape = { inset = 0, radius = look.bar_radius },
+                                 popups = { enabled = true, preset = "subtle" } })  -- tray menus too
+    hg.layer("quickshell-controlcenter", { mask_mode = "contour" })
+    hg.layer("quickshell-picker", { mask_mode = "contour" })
+    hg.layer("quickshell-launcher", { mask_mode = "contour" })
+    hg.layer("quickshell-notifications", { mask_mode = "contour" })
+    hg.layer("quickshell-osd", { mask_mode = "contour" })
+    hg.layer("quickshell-dock", { mask_mode = "contour",
+                                  popups = { enabled = true, mask_mode = "contour" } })  -- app menus, tooltips
+end
+
+-----------------------
+----- PERMISSIONS -----
+-----------------------
+
+-- See https://wiki.hypr.land/configuring/core/advanced-configuration/permissions/
+-- Please note permission changes here require a Hyprland restart and are not applied on-the-fly
+-- for security reasons
+
+-- hl.config({
+--   ecosystem = {
+--     enforce_permissions = true,
+--   },
+-- })
+
+-- hl.permission("/usr/(bin|local/bin)/grim", "screencopy", "allow")
+-- hl.permission("/usr/(lib|libexec|lib64)/xdg-desktop-portal-hyprland", "screencopy", "allow")
+-- hl.permission("/usr/(bin|local/bin)/hyprpm", "plugin", "allow")
+
+
+-----------------------
+---- LOOK AND FEEL ----
+-----------------------
+
+-- Refer to https://wiki.hypr.land/configuring/core/config-options/
+hl.config({
+    general = {
+        gaps_in  = 5,
+        gaps_out = 20,
+
+        border_size = 2,
+
+        col = {
+            -- Accent from the Quickshell Settings tab (look.lua)
+            active_border   = { colors = {"rgba(" .. look.accent .. "ee)", "rgba(" .. look.accent2 .. "ee)"}, angle = 45 },
+            inactive_border = "rgba(" .. look.inactive .. "aa)",
+        },
+
+        -- Set to true to enable resizing windows by clicking and dragging on borders and gaps
+        resize_on_border = false,
+
+        -- Please see https://wiki.hypr.land/configuring/extra/tearing/ before you turn this on
+        allow_tearing = false,
+
+        layout = "dwindle",
+    },
+
+    decoration = {
+        rounding       = 10,
+        rounding_power = 2,
+
+        -- Change transparency of focused and unfocused windows
+        active_opacity   = 1.0,
+        inactive_opacity = 1.0,
+
+        shadow = {
+            enabled      = true,
+            range        = 4,
+            render_power = 3,
+            color        = 0xee1a1a1a,
+        },
+
+        blur = {
+            enabled   = true,
+            size      = 3,
+            passes    = 1,
+            vibrancy  = 0.1696,
+        },
+    },
+
+    animations = {
+        enabled = look.animations,       -- Settings → Motion: Off turns these off
+    },
+})
+
+-- Default curves and animations, see https://wiki.hypr.land/configuring/core/animations/
+hl.curve("easeOutQuint",   { type = "bezier", points = { {0.23, 1},    {0.32, 1}    } })
+hl.curve("easeInOutCubic", { type = "bezier", points = { {0.65, 0.05}, {0.36, 1}    } })
+hl.curve("linear",         { type = "bezier", points = { {0, 0},       {1, 1}       } })
+hl.curve("almostLinear",   { type = "bezier", points = { {0.5, 0.5},   {0.75, 1}    } })
+hl.curve("quick",          { type = "bezier", points = { {0.15, 0},    {0.1, 1}     } })
+
+-- Default springs
+hl.curve("easy",           { type = "spring", mass = 1, stiffness = 238.1191, damping = 24.21279333 })
+
+hl.animation({ leaf = "global",        enabled = true,  speed = 10,   bezier = "default" })
+hl.animation({ leaf = "border",        enabled = true,  speed = 5.39, bezier = "easeOutQuint" })
+hl.animation({ leaf = "windows",       enabled = true,  speed = 4.79, spring = "easy" })
+hl.animation({ leaf = "windowsIn",     enabled = true,  speed = 4.1,  spring = "easy",         style = "popin 87%" })
+hl.animation({ leaf = "windowsOut",    enabled = true,  speed = 1.49, bezier = "linear",       style = "popin 87%" })
+hl.animation({ leaf = "fadeIn",        enabled = true,  speed = 1.73, bezier = "almostLinear" })
+hl.animation({ leaf = "fadeOut",       enabled = true,  speed = 1.46, bezier = "almostLinear" })
+hl.animation({ leaf = "fade",          enabled = true,  speed = 3.03, bezier = "quick" })
+hl.animation({ leaf = "layers",        enabled = true,  speed = 3.81, bezier = "easeOutQuint" })
+hl.animation({ leaf = "layersIn",      enabled = true,  speed = 4,    bezier = "easeOutQuint", style = "fade" })
+hl.animation({ leaf = "layersOut",     enabled = true,  speed = 1.5,  bezier = "linear",       style = "fade" })
+hl.animation({ leaf = "fadeLayersIn",  enabled = true,  speed = 1.79, bezier = "almostLinear" })
+hl.animation({ leaf = "fadeLayersOut", enabled = true,  speed = 1.39, bezier = "almostLinear" })
+hl.animation({ leaf = "workspaces",    enabled = true,  speed = 1.94, bezier = "almostLinear", style = "fade" })
+hl.animation({ leaf = "workspacesIn",  enabled = true,  speed = 1.21, bezier = "almostLinear", style = "fade" })
+hl.animation({ leaf = "workspacesOut", enabled = true,  speed = 1.94, bezier = "almostLinear", style = "fade" })
+hl.animation({ leaf = "zoomFactor",    enabled = true,  speed = 7,    bezier = "quick" })
+
+-- Ref https://wiki.hypr.land/configuring/core/rules/workspace-rules/
+-- "Smart gaps" / "No gaps when only"
+-- uncomment all if you wish to use that.
+-- hl.workspace_rule({ workspace = "w[tv1]", gaps_out = 0, gaps_in = 0 })
+-- hl.workspace_rule({ workspace = "f[1]",   gaps_out = 0, gaps_in = 0 })
+-- hl.window_rule({
+--     name  = "no-gaps-wtv1",
+--     match = { float = false, workspace = "w[tv1]" },
+--     border_size = 0,
+--     rounding    = 0,
+-- })
+-- hl.window_rule({
+--     name  = "no-gaps-f1",
+--     match = { float = false, workspace = "f[1]" },
+--     border_size = 0,
+--     rounding    = 0,
+-- })
+
+-- See https://wiki.hypr.land/configuring/layouts/dwindle-layout/ for more
+hl.config({
+    dwindle = {
+        preserve_split = true, -- You probably want this
+    },
+})
+
+-- See https://wiki.hypr.land/configuring/layouts/master-layout/ for more
+hl.config({
+    master = {
+        new_status = "master",
+    },
+})
+
+-- See https://wiki.hypr.land/configuring/layouts/scrolling-layout/ for more
+hl.config({
+    scrolling = {
+        fullscreen_on_one_column = true,
+    },
+})
+
+----------------
+----  MISC  ----
+----------------
+
+hl.config({
+    misc = {
+        force_default_wallpaper = 0,    -- Quickshell draws the wallpaper (Wallpaper.qml)
+        disable_hyprland_logo   = true,
+    },
+})
+
+-- Dragging a tiled window by its titlebar turns it floating. Keep the cursor
+-- on the spot you grabbed instead of snapping the window's centre to it, and
+-- only start dragging after the pointer moves a few pixels (plain clicks on a
+-- titlebar no longer pull the window out of the layout).
+hl.config({
+    binds = {
+        drag_center_window = false,
+        drag_threshold     = 10,
+    },
+})
+
+-- Focusing a window (dock, Alt+Tab, keybinds, another workspace) leaves the
+-- pointer where it is instead of warping it to the window's centre.
+hl.config({
+    cursor = {
+        no_warps = true,
+    },
+})
+
+
+----------------
+---- LAYERS ----
+----------------
+
+hl.config({
+    layers = {
+        allow_new_top_layers_over_existing_fullscreen = true, -- Set to false to make newly mapped top layers render below existing covering fullscreen window
+    },
+})
+
+
+---------------
+---- INPUT ----
+---------------
+
+hl.config({
+    input = {
+        kb_layout  = "us",
+        kb_variant = "",
+        kb_model   = "",
+        kb_options = "",
+        kb_rules   = "",
+
+        follow_mouse = 1,
+
+        sensitivity = 0, -- -1.0 - 1.0, 0 means no modification.
+
+        touchpad = {
+            natural_scroll = false,
+        },
+    },
+})
+
+hl.gesture({
+    fingers = 3,
+    direction = "horizontal",
+    action = "workspace"
+})
+
+-- Example per-device config
+-- See https://wiki.hypr.land/configuring/core/devices/ for more
+hl.device({
+    name        = "epic-mouse-v1",
+    sensitivity = -0.5,
+})
+
+
+---------------------
+---- KEYBINDINGS ----
+---------------------
+
+local mainMod = "SUPER" -- Sets "Windows" key as main modifier
+
+-- Example binds, see https://wiki.hypr.land/configuring/core/binds/ for more
+hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
+local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
+-- closeWindowBind:set_enabled(false)
+hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
+hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
+hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
+hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
+hl.bind(mainMod .. " + space", hl.dsp.exec_cmd("qs ipc call launcher toggle"))   -- Quickshell launcher (Launcher.qml)
+hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("loginctl lock-session"))   -- lock (hyprlock via hypridle)
+hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
+hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
+
+-- Move focus with mainMod + arrow keys
+hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
+hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
+hl.bind(mainMod .. " + up",    hl.dsp.focus({ direction = "up" }))
+hl.bind(mainMod .. " + down",  hl.dsp.focus({ direction = "down" }))
+
+-- Switch workspaces with mainMod + [0-9]
+-- Move active window to a workspace with mainMod + SHIFT + [0-9]
+for i = 1, 10 do
+    local key = i % 10 -- 10 maps to key 0
+    hl.bind(mainMod .. " + " .. key,             hl.dsp.focus({ workspace = i}))
+    hl.bind(mainMod .. " + SHIFT + " .. key,     hl.dsp.window.move({ workspace = i }))
+end
+
+-- Example special workspace (scratchpad)
+hl.bind(mainMod .. " + S",         hl.dsp.workspace.toggle_special("magic"))
+hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }))
+
+-- Scroll through existing workspaces with mainMod + scroll
+hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
+hl.bind(mainMod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
+
+-- Move/resize windows with mainMod + LMB/RMB and dragging
+hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
+hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
+
+-- Laptop multimedia keys for volume and LCD brightness
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),      { locked = true, repeating = true })
+hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),     { locked = true, repeating = true })
+hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),   { locked = true, repeating = true })
+hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"),                  { locked = true, repeating = true })
+hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"),                  { locked = true, repeating = true })
+
+-- Requires playerctl
+hl.bind("XF86AudioNext",  hl.dsp.exec_cmd("playerctl next"),       { locked = true })
+hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
+hl.bind("XF86AudioPlay",  hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
+hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = true })
+
+
+--------------------------------
+---- WINDOWS AND WORKSPACES ----
+--------------------------------
+
+-- See https://wiki.hypr.land/configuring/core/rules/
+
+-- Example window rules that are useful
+
+local suppressMaximizeRule = hl.window_rule({
+    -- Ignore maximize requests from all apps. You'll probably like this.
+    name  = "suppress-maximize-events",
+    match = { class = ".*" },
+
+    suppress_event = "maximize",
+})
+-- suppressMaximizeRule:set_enabled(false)
+
+hl.window_rule({
+    -- Fix some dragging issues with XWayland
+    name  = "fix-xwayland-drags",
+    match = {
+        class      = "^$",
+        title      = "^$",
+        xwayland   = true,
+        float      = true,
+        fullscreen = false,
+        pin        = false,
+    },
+
+    no_focus = true,
+})
+
+-- Layer rules also return a handle.
+-- local overlayLayerRule = hl.layer_rule({
+--     name  = "no-anim-overlay",
+--     match = { namespace = "^my-overlay$" },
+--     no_anim = true,
+-- })
+-- overlayLayerRule:set_enabled(false)
+
+-- Hyprland-run windowrule
+hl.window_rule({
+    name  = "move-hyprland-run",
+    match = { class = "hyprland-run" },
+
+    move  = "20 monitor_h-120",
+    float = true,
+})

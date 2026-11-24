@@ -1,0 +1,25 @@
+{
+    "accent": "sapphire",
+    "barFloating": true,
+    "barHeight": 36,
+    "dockAutohide": false,
+    "dockEnabled": true,
+    "dockIconSize": 48,
+    "dockMagnification": 1.6,
+    "dockPinned": [
+        "org.gnome.Nautilus",
+        "google-chrome",
+        "org.mozilla.firefox",
+        "herdr-app",
+        "net.thunderbird.Thunderbird"
+    ],
+    "dockPosition": "left",
+    "flavour": "mocha",
+    "frost": 1.4,
+    "material": "solid",
+    "motion": "fast",
+    "refraction": 1.6,
+    "roundness": 0,
+    "tint": 0.33,
+    "wallpaper": ""
+}

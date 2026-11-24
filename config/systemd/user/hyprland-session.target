@@ -1,0 +1,10 @@
+# Marks a running Hyprland session so graphical-session.target (and with it
+# xdg-desktop-portal, at-spi, gvfs) can start. Started and stopped from
+# ~/.config/hypr/hyprland.lua. The packaged copy sits in /usr/lib64/systemd/user,
+# which systemd does not read.
+[Unit]
+Description=Hyprland session
+Documentation=man:systemd.special(7)
+BindsTo=graphical-session.target
+Wants=graphical-session-pre.target
+After=graphical-session-pre.target
