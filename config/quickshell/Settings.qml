@@ -58,7 +58,7 @@ Singleton {
             property string material: "glass"
             property real frost: 1.4
             property real refraction: 1.6
-            property real tint: 0.33
+            property real tint: 0.45
             property bool barFloating: true
             property int barHeight: 34
             property int roundness: 16

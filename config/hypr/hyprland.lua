@@ -113,12 +113,17 @@ end
 ---- LIQUID GLASS  -----
 ------------------------
 
--- hyprglass plugin (https://github.com/hyprnux/hyprglass), v1.2.0 prebuilt for
--- Hyprland 0.57.2. After a Hyprland update, download the matching release (or
--- build it) and change the path; on a version mismatch it pauses itself.
--- `hyprctl hyprglass status` shows whether it is drawing.
--- Quickshell switches to translucent surfaces when this is loaded (Theme.qml).
-hl.plugin.load(os.getenv("HOME") .. "/.local/share/hyprland/plugins/hyprglass-1.2.0.so")
+-- hyprglass plugin (https://github.com/hyprnux/hyprglass). It must match the
+-- Hyprland version exactly: download the matching release (see the dotfiles
+-- README) and point plugins/hyprglass.so at it. On a mismatch it
+-- pauses itself. `hyprctl hyprglass status` shows whether it is drawing.
+-- Without it the shell uses solid panels (Theme.qml checks `hyprctl plugin list`).
+local glassPlugin = os.getenv("HOME") .. "/.local/share/hyprland/plugins/hyprglass.so"
+local glassFile = io.open(glassPlugin, "r")
+if glassFile then
+    glassFile:close()
+    hl.plugin.load(glassPlugin)
+end
 
 if hl.plugin.hyprglass then
     local hg = hl.plugin.hyprglass

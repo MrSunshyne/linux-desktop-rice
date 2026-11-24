@@ -42,12 +42,14 @@ Singleton {
     readonly property color sheen: dark ? "#ffffff" : "#000000"
 
     // ---- Roles used by components -------------------------------------------
-    // Light glass over dark windows washes out, so Latte keeps more of its own colour.
-    readonly property color bg: glass ? Qt.alpha(crust, dark ? 0.28 : 0.62) : Qt.alpha(crust, 0.92) // bar
-    readonly property color panel: glass ? Qt.alpha(mantle, dark ? 0.38 : 0.74) : mantle            // panels, popups
-    readonly property color card: glass ? Qt.alpha(sheen, dark ? 0.055 : 0.045) : base             // cards, capsules
-    readonly property color cardHover: glass ? Qt.alpha(sheen, dark ? 0.11 : 0.08) : surface0
-    readonly property color border: glass ? Qt.alpha(sheen, dark ? 0.09 : 0.08) : Qt.alpha(surface1, 0.6)
+    // Glass fills are dense enough to stay readable over bright, busy wallpapers;
+    // the plugin's blur and refraction show through around them. Light glass over
+    // dark windows washes out, so Latte keeps more of its own colour.
+    readonly property color bg: glass ? Qt.alpha(crust, dark ? 0.55 : 0.7) : Qt.alpha(crust, 0.92)  // bar
+    readonly property color panel: glass ? Qt.alpha(mantle, dark ? 0.68 : 0.8) : mantle             // panels, popups
+    readonly property color card: glass ? Qt.alpha(sheen, dark ? 0.07 : 0.05) : base                // cards, capsules
+    readonly property color cardHover: glass ? Qt.alpha(sheen, dark ? 0.13 : 0.09) : surface0
+    readonly property color border: glass ? Qt.alpha(sheen, dark ? 0.13 : 0.1) : Qt.alpha(surface1, 0.6)
     readonly property color backdrop: glass ? "transparent" : Qt.alpha(crust, dark ? 0.35 : 0.2)   // behind open panels
 
     readonly property color fg: text
