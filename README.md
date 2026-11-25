@@ -58,10 +58,11 @@ sudo dnf copr enable sdegler/hyprland            # Hyprland and its tools
 sudo dnf copr enable errornointernet/quickshell  # Quickshell 0.3.x
 sudo dnf install --setopt=install_weak_deps=False \
   hyprland xdg-desktop-portal-hyprland hyprland-guiutils hyprpolkitagent \
-  hyprlauncher hyprlock hypridle quickshell
+  hyprlauncher hyprlock hypridle quickshell \
+  grim slurp wl-clipboard satty jq            # screenshots
 ```
 
-Also used if present: `kitty` (terminal), `nautilus` (files), `flameshot` (screenshots),
+Also used if present: `kitty` (terminal), `nautilus` (files),
 `gnome-control-center` (opened for detailed network/sound settings), Adwaita icons and the
 Adwaita Sans font (Fedora Workstation defaults). Other distros: see [AGENTS.md](AGENTS.md).
 
@@ -122,6 +123,8 @@ build with `hyprpm`) and repoint the `hyprglass.so` link.
 | Super+←↑→↓ | Move focus |
 | Super+1…0 / Super+Shift+1…0 | Switch to / move window to workspace |
 | Super+S / Super+Shift+S | Scratchpad / move window there |
+| Print | Screenshot a region, annotate in Satty (Enter copies, Ctrl+S saves) |
+| Ctrl+Print / Shift+Print / Alt+Print | Region / whole screen / focused window → clipboard + `~/Pictures/Screenshots` |
 | Super+drag (left / right button) | Move / resize window |
 
 ## Layout
@@ -131,6 +134,7 @@ config/
   hypr/hyprland.lua          Hyprland (Lua config): monitor, autostart, glass, keys, rules
   hypr/hypridle.conf         lock + screen off at 15 min, suspend at 100 min
   hypr/hyprlock.conf         lock screen
+  hypr/scripts/screenshot.sh grim + slurp + Satty screenshots (Print keys)
   systemd/user/hyprland-session.target   lets xdg-desktop-portal start under Hyprland
   quickshell/
     shell.qml                entry point

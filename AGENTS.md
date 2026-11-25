@@ -30,7 +30,8 @@ older than 0.3 lacks the `Quickshell.Networking` module the Network tab and pick
 1. **Packages.** Fedora: see README → Requirements. Other distros need the same set: `hyprland`
    (≥ 0.55), `xdg-desktop-portal-hyprland`, `hyprpolkitagent`, `hyprlock`, `hypridle`,
    `hyprlauncher` (fallback launcher only), `quickshell` (≥ 0.3), plus `kitty`, `nautilus`,
-   `flameshot`, Adwaita icon theme and the Adwaita Sans font. Package names vary; on Arch most are
+   `grim`, `slurp`, `wl-clipboard`, `satty`, `jq` (screenshots), Adwaita icon theme and the Adwaita
+   Sans font. Package names vary; on Arch most are
    in the official repos or AUR.
 2. **Configs.** `./install.sh` (copies `config/` into `~/.config`, backs up existing files, copies
    the wallpaper to `~/Pictures/Wallpapers`).
@@ -41,7 +42,7 @@ older than 0.3 lacks the `Quickshell.Networking` module the Network tab and pick
      on AMD/Intel-only machines.
    - `hl.exec_cmd("/usr/libexec/hyprpolkitagent")`: Fedora's path. Elsewhere find it with the
      package manager (e.g. `/usr/lib/hyprpolkitagent/hyprpolkitagent` on Arch).
-   - `hl.exec_cmd("flameshot")` in `hyprland.start`: drop if not wanted.
+   - `STEAM_FORCE_DESKTOPUI_SCALING` (1.25): set it to the target's monitor scale.
 4. **Liquid glass (optional).** README → Liquid glass. The `.so` must match `hyprctl version`
    exactly; link it as `~/.local/share/hyprland/plugins/hyprglass.so`. Without it the shell uses
    solid panels automatically.
@@ -63,7 +64,7 @@ plus its own accent list and default accent. Catppuccin's four come from the gen
 `palettes.js`. To add a theme, add one `add(id, {...})` block; nothing else needs to change.
 
 - **`hyprland.lua`**: monitor; `hl.on("hyprland.start")` starts the session target, Quickshell
-  (`qs`), the polkit agent, hypridle and Flameshot; `hl.on("hyprland.shutdown")` stops the session
+  (`qs`), the polkit agent and hypridle; `hl.on("hyprland.shutdown")` stops the session
   target; env vars; hyprglass load + per-layer glass rules; look values from `look.lua`; keys.
 - **`systemd/user/hyprland-session.target`**: binds `graphical-session.target` so
   `xdg-desktop-portal` (file pickers, screen share, dark-mode reporting) can start.
@@ -126,6 +127,11 @@ works once the session target is up; `grim` isn't needed.
   `hyprland.shutdown`, set env vars with `hl.env` only (not `environment.d`), and start
   `hyprpolkitagent` from Hyprland rather than enabling its unit. Otherwise GNOME sessions inherit
   Hyprland state.
+- Fractional scaling blurs X11 apps (Steam): Hyprland draws them at 100% and stretches them.
+  `xwayland:force_zero_scaling = true` makes them render at full resolution; each app then scales
+  itself (`STEAM_FORCE_DESKTOPUI_SCALING` for Steam). Check with `hyprctl clients` (`xwayland: 1`).
+- Flameshot's interactive capture doesn't work under Hyprland here; screenshots use
+  `hypr/scripts/screenshot.sh` (grim + slurp + Satty) bound to Print.
 - `cursor:no_warps = true`: otherwise focusing a window (dock click, other workspace) warps the
   pointer to its centre.
 - `binds:drag_center_window = false` and `binds:drag_threshold = 10`: otherwise dragging a tiled

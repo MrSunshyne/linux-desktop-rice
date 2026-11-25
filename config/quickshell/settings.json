@@ -1,7 +1,7 @@
 {
-    "accent": "blue",
+    "accent": "iris",
     "barFloating": true,
-    "barHeight": 36,
+    "barHeight": 34,
     "dockAutohide": false,
     "dockEnabled": true,
     "dockIconSize": 48,
@@ -14,7 +14,7 @@
         "net.thunderbird.Thunderbird"
     ],
     "dockPosition": "left",
-    "flavour": "mocha",
+    "flavour": "rosepine",
     "frost": 1.4,
     "material": "solid",
     "motion": "fast",

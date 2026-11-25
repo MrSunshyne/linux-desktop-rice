@@ -290,8 +290,12 @@ Scope {
                             height: root.vertical ? len : across
                             x: root.vertical ? (root.edge === "left" ? inset : dockStage.width - inset - width) : center - width / 2
                             y: root.vertical ? center - height / 2 : dockStage.height - inset - height
-                            Behavior on x { enabled: !root.vertical; SmoothedAnimation { velocity: -1; duration: Theme.dur(slot.isDragged ? 40 : 110) } }
-                            Behavior on y { enabled: root.vertical; SmoothedAnimation { velocity: -1; duration: Theme.dur(slot.isDragged ? 40 : 110) } }
+                            // Smoothing is for reorders and apps opening/closing only. While
+                            // magnifying, positions must change in the same frame as icon sizes
+                            // and the dock body, or neighbours lag behind and then jump.
+                            readonly property bool smoothMove: root.dragId !== "" || (!root.hovering && root.magAmount === 0)
+                            Behavior on x { enabled: !root.vertical && slot.smoothMove; SmoothedAnimation { velocity: -1; duration: Theme.dur(slot.isDragged ? 40 : 110) } }
+                            Behavior on y { enabled: root.vertical && slot.smoothMove; SmoothedAnimation { velocity: -1; duration: Theme.dur(slot.isDragged ? 40 : 110) } }
                             z: isDragged ? 10 : 0
                             opacity: isDragged && root.dragRemoving ? 0.45 : 1
                             Behavior on opacity { NumberAnimation { duration: Theme.anim } }

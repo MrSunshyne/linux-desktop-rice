@@ -10,6 +10,8 @@ mkdir -p "$repo/config/hypr" "$repo/config/systemd/user"
 cp "$src/hypr/hyprland.lua" "$src/hypr/hypridle.conf" "$src/hypr/hyprlock.conf" "$repo/config/hypr/"
 rm -rf "$repo/config/quickshell"
 cp -r "$src/quickshell" "$repo/config/quickshell"
+rm -rf "$repo/config/hypr/scripts"
+cp -r "$src/hypr/scripts" "$repo/config/hypr/scripts"
 cp "$src/systemd/user/hyprland-session.target" "$repo/config/systemd/user/"
 
 # Absolute home paths would leak the username.

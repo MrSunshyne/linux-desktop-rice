@@ -63,7 +63,7 @@ hl.on("hyprland.start", function ()
   hl.exec_cmd("hypridle")
   -- Apps. GNOME's ~/.config/autostart is NOT read here; list them explicitly.
   -- qz-tray, Mailspring, Dropbox and portless are deliberately left out.
-  hl.exec_cmd("flameshot")
+  -- (Screenshots: grim/slurp/Satty via scripts/screenshot.sh, no daemon needed.)
 end)
 
 -- Stop the session target on exit so it doesn't linger into a GNOME login
@@ -90,6 +90,11 @@ hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")
 
 -- Quickshell has no desktop to inherit an icon theme from; use GNOME's.
 hl.env("QS_ICON_THEME", "Adwaita")
+
+-- X11 apps (XWayland, e.g. Steam) render at full resolution instead of being
+-- drawn at 100% and stretched to the 1.25 monitor scale, which blurs text.
+-- They then scale themselves: Steam via this variable (match the monitor scale).
+hl.env("STEAM_FORCE_DESKTOPUI_SCALING", "1.25")
 
 
 -------------------------------------
@@ -335,6 +340,13 @@ hl.config({
     },
 })
 
+-- See STEAM_FORCE_DESKTOPUI_SCALING above.
+hl.config({
+    xwayland = {
+        force_zero_scaling = true,
+    },
+})
+
 
 ----------------
 ---- LAYERS ----
@@ -428,6 +440,13 @@ hl.bind(mainMod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
+-- Screenshots (scripts/screenshot.sh): grim + slurp, annotate with Satty
+local screenshot = os.getenv("HOME") .. "/.config/hypr/scripts/screenshot.sh"
+hl.bind("Print",                    hl.dsp.exec_cmd(screenshot .. " region-edit"))  -- region -> Satty
+hl.bind("CTRL + Print",             hl.dsp.exec_cmd(screenshot .. " region"))       -- region -> clipboard + file
+hl.bind("SHIFT + Print",            hl.dsp.exec_cmd(screenshot .. " screen"))       -- whole screen
+hl.bind("ALT + Print",              hl.dsp.exec_cmd(screenshot .. " window"))       -- focused window
+
 -- Laptop multimedia keys for volume and LCD brightness
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
 hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),      { locked = true, repeating = true })
@@ -490,4 +509,12 @@ hl.window_rule({
 
     move  = "20 monitor_h-120",
     float = true,
+})
+
+-- Satty (screenshot editor) floats, centred, instead of tiling.
+hl.window_rule({
+    name   = "float-satty",
+    match  = { class = "com.gabm.satty" },
+    float  = true,
+    center = true,
 })

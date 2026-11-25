@@ -23,6 +23,7 @@ install_path() {   # $1 = path relative to config/
 install_path hypr/hyprland.lua
 install_path hypr/hypridle.conf
 install_path hypr/hyprlock.conf
+install_path hypr/scripts
 install_path quickshell
 install_path systemd/user/hyprland-session.target
 systemctl --user daemon-reload 2>/dev/null || true
