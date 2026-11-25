@@ -21,6 +21,11 @@ finish() {
 case "${1:-region-edit}" in
     region-edit)
         region=$(slurp -d) || exit 0            # Esc cancels
+        if ! command -v satty >/dev/null; then  # no editor: don't lose the capture
+            grim -g "$region" "$file" && finish
+            notify-send -a Screenshot "Satty isn't installed" "Saved without the editor. Install it with: sudo dnf install satty"
+            exit 0
+        fi
         grim -g "$region" - | satty --filename - \
             --output-filename "$dir/Screenshot-%Y-%m-%d_%H-%M-%S.png" \
             --copy-command wl-copy --early-exit
